@@ -95,11 +95,11 @@ const TicTacToeApp = () => {
             row: undefined
         }); 
     }
-    const handleTurn = ({target}) => {
-        const { checked } = target;
+    const handleTurn = ({value, type}) => { 
         setTurn(prev => ({
             ...prev,
-            value: checked ? 'blemish' : 'ball'
+            value,
+            type
         }));
     }
     useEffect(() => {
