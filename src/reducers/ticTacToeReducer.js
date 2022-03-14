@@ -8,7 +8,7 @@ const ticTacToeReducer = ( state = [], action) => {
                 if(stateRow === row) {
                     return elements.map((item, stateCell) => (
                         stateCell === cell &&  !item.checked
-                            ? {...item, checked: !checked, value} 
+                            ? {...item, checked: true, value} 
                             : item
                     ));
                 }

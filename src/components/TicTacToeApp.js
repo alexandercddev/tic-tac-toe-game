@@ -4,6 +4,7 @@ import TicTacToeItem from './TicTacToeItem';
 import TicTacToeMaker from './TicTacToeMarker';
 import TicTacToePickPlayer from './TicTacToePickPlayer';
 import TicTacToeIcons from './TicTacToeIcons';
+import TicTacToeGame from './TicTacToeGame';
 
 const init = () => [
     [
@@ -61,13 +62,12 @@ const init = () => [
 
 const TicTacToeApp = () => {
     const [ ticTacToes, dispath ] = useReducer(ticTacToeReducer, [], init); 
-    const [turn, setTurn] = useState({ });
+    const [turn, setTurn] = useState({});
     const [makers, setMakers] = useState({
         blemish: 0,
         ties: 0,
         ball: 0,
-    });
-    const { blemish, ties, ball } = makers;
+    }); 
     const handleChecked = ({ target: { checked } }, row, cell) => {
         const prev = ticTacToes[row][cell];
         if(!prev?.checked){
@@ -81,6 +81,7 @@ const TicTacToeApp = () => {
                 }
             }); 
             setTurn( (prev) => ({
+                ...prev,
                 value: prev.value === 'ball' ? 'blemish' : 'ball',
                 cell,
                 row
@@ -89,82 +90,55 @@ const TicTacToeApp = () => {
     }
     const handleRefresh = () => {
         dispath({ type: 'refresh' }); 
-        setTurn({
+        setTurn((prev) => ({
+            ...prev,
             value: 'blemish',
             cell: undefined,
             row: undefined
-        }); 
+        })); 
     }
-    const handleTurn = ({value, type}) => { 
+    const handleTurn = (data) => {  
         setTurn(prev => ({
             ...prev,
-            value,
-            type
-        }));
+            ...data
+        })); 
+    }
+    const getValue = num => {
+        const number = num + 1;
+        if(number % 2 && number % 3 ){
+            return number % 2
+        } else if(number % 3){
+            return (num - 1) % 3
+        } else if(number % 2){
+            return (num + 1) % 2;
+        }
+        return 0;
     }
     useEffect(() => {
-        const { cell, row } = turn; 
-        if( cell !== undefined && row !== undefined) {
-            const prev = ticTacToes[row][cell];
-            if(!prev?.checked){  
-                if( cell === row ){ 
-                    console.log(row%3); 
-                }
-            } 
-        } 
-    }, [turn]);
+        const { value, type, player, row, cell } = turn;  
+        if(type === 'cpu' &&  value !== player){ 
+            console.log('Mi turno!!')
+            setTimeout(() => {
+                handleChecked({
+                    target: {
+                        checked: true
+                    }, 
+                }, getValue(row), getValue(cell));
+            }, 500);
+        }
+    }, [ticTacToes, turn]);
     return (<div>
         {turn?.value === undefined 
             ? (<TicTacToePickPlayer 
                     handleTurn={handleTurn}
             />)
-            : (<> 
-                <div className="container header">
-                    <TicTacToeIcons />
-                    <div className="content turn">
-                        <span className={`${turn.value}-s`}></span>
-                        turn
-                    </div>
-                    <div className='content refresh'>
-                        <button className="btn" onClick={handleRefresh}>
-                            <span className='refresh'></span>
-                        </button>
-                    </div>
-                </div>
-                <div className="container game">
-                    {ticTacToes.map( (elements, row) => {
-                        return elements.map((item, cell) => { 
-                            return (
-                                <TicTacToeItem 
-                                    key={`checkebox-${row}${cell}`} 
-                                    row={row}
-                                    cell={cell}
-                                    {...item}
-                                    turn={turn.value}
-                                    handleChecked={handleChecked}
-                                />
-                            )
-                        })
-                    })} 
-                </div>
-                <div className="container dot-marker">
-                    <TicTacToeMaker
-                        text="x (you)"
-                        value={blemish}
-                        type="blemish"
-                    />
-                    <TicTacToeMaker
-                        text="ties"
-                        value={ties}
-                        type="ties"
-                    />
-                    <TicTacToeMaker
-                        text="o (cpu)"
-                        value={ball}
-                        type="ball"
-                    />  
-                </div>
-            </>)
+            : (<TicTacToeGame 
+                    ticTacToes={ticTacToes}
+                    turn={turn}
+                    makers={makers}
+                    handleChecked={handleChecked}
+                    handleRefresh={handleRefresh}
+            />)
         }
         
     </div>);
